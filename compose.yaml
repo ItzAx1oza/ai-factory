@@ -1,0 +1,36 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: factory
+      POSTGRES_DB: factory
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U factory]
+      interval: 5s
+      retries: 10
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://factory:${POSTGRES_PASSWORD}@database/factory
+      PROJECT_ROOT: /data/projects
+      ENABLE_SANDBOX: "false"
+    volumes:
+      - projects:/data
+    depends_on:
+      database:
+        condition: service_healthy
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - 127.0.0.1:3000:3000
+    depends_on:
+      - backend
+volumes:
+  database:
+  projects:
