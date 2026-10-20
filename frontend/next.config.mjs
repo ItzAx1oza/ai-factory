@@ -1,1 +1,3 @@
-export default { async rewrites() { return [{source:'/api/:path*',destination:`${process.env.BACKEND_URL || 'http://127.0.0.1:8000'}/api/:path*`}]; } };
+// Cloudflare Pages serves the statically exported frontend.
+// API traffic is proxied by frontend/functions/api/[[path]].ts.
+export default {output:'export'};
